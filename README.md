@@ -2,6 +2,8 @@
 
 A simple, self-hosted web UI for testing and debugging any OpenAI-compatible API endpoint.
 
+**[Try the Live Demo!](https://ai-api-tester-wve8.onrender.com/)**
+
 This tool allows you to quickly check your API's model availability, test chat completions, and inspect raw responses, all from a clean and simple interface. It's perfect for developers working with different LLM providers or self-hosted models.
 
 ![Screenshot](./screenshot.png)

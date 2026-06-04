@@ -2,6 +2,8 @@
 
 一个简单、自托管的 Web UI，用于测试和调试任何兼容 OpenAI 接口的 API 端点。
 
+**[在线体验地址](https://ai-api-tester-wve8.onrender.com/)**
+
 此工具可让您通过简洁的界面快速检查 API 的模型可用性、测试聊天补全功能并检查原始响应。它非常适合使用不同 LLM 提供商或自托管模型的开发人员。
 
 ![屏幕截图](./screenshot.png)
