@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  api-tester:
+    build: .
+    container_name: api-tester
+    restart: unless-stopped
+    ports:
+      - "55443:55443"
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=55443
+      - TIMEOUT_MS=60000
+    # To override settings locally, create a docker-compose.override.yml file
+    # and add your changes there. For example, to use a .env file:
+    #
+    # env_file:
+    #   - .env

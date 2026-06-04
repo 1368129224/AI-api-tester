@@ -1,0 +1,15 @@
+{
+  "name": "api-tester",
+  "version": "1.0.0",
+  "description": "AI API Tester - Debug tool for OpenAI compatible APIs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.4.5"
+  }
+}

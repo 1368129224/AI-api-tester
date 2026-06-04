@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  Copyright (C) 2024 zooter
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="pageTitle">AI API Tester</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="language-switcher">
+        <button id="lang-en" onclick="setLanguage('en')">English</button>
+        <button id="lang-zh" onclick="setLanguage('zh')">中文</button>
+      </div>
+      <h1 data-i18n="appTitle">AI API Tester</h1>
+    </header>
+
+    <div class="card">
+      <div class="card-title" data-i18n="savedConfigsTitle">Saved Configurations</div>
+      <div class="form-group full">
+        <label for="config-select" data-i18n="loadConfigLabel">Load a saved configuration</label>
+        <div class="config-selector-container">
+          <select id="config-select" onchange="loadSelectedConfig()"></select>
+          <button class="btn btn-secondary" onclick="deleteSelectedConfig()" data-i18n="deleteSelectedBtn">Delete</button>
+          <button class="btn btn-secondary" onclick="importConfigs()" data-i18n="importBtn">Import</button>
+        </div>
+      </div>
+      <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="handleImportFile(event)">
+    </div>
+
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label data-i18n="configNameLabel">Configuration Name (for saving)</label>
+          <input type="text" id="configName" data-i18n-placeholder="configNamePlaceholder" placeholder="e.g., My OpenAI Key">
+        </div>
+        <div class="form-group full">
+          <label for="apiType" data-i18n="apiTypeLabel">API Type</label>
+          <select id="apiType" onchange="updateBaseUrl()">
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="gemini">Gemini</option>
+            <option value="custom" data-i18n="customOption">Custom</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label data-i18n="baseUrlLabel">Base URL</label>
+          <input type="text" id="baseUrl" data-i18n-placeholder="baseUrlPlaceholder" placeholder="https://api.openai.com/v1" value="" oninput="document.getElementById('apiType').value = 'custom'">
+        </div>
+        <div class="form-group full">
+          <label data-i18n="apiKeyLabel">API Key</label>
+          <input type="password" id="apiKey" data-i18n-placeholder="apiKeyPlaceholder" placeholder="sk-...">
+        </div>
+        <div class="form-group">
+          <label data-i18n="modelLabel">Model</label>
+          <div style="display:flex;gap:0.5rem;">
+            <input type="text" id="model" data-i18n-placeholder="modelPlaceholder" placeholder="gpt-4o-mini" value="gpt-4o-mini" style="flex:1;">
+            <button class="btn btn-secondary" id="fetchModelsBtn" onclick="fetchModels()" data-i18n="fetchModelsBtn">Fetch Models</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="messageLabel">Message (optional)</label>
+          <input type="text" id="message" data-i18n-placeholder="messagePlaceholder" placeholder="Hi" value="Hi">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="sendBtn" onclick="sendRequest()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+          <span data-i18n="sendRequestBtn">Send Request</span>
+        </button>
+        <button class="btn btn-secondary" id="extraBodyBtn" onclick="toggleExtraBody()" data-i18n="extraBodyBtn">Extra Body</button>
+        <button class="btn btn-secondary" id="saveConfigBtn" onclick="saveConfig()" data-i18n="saveConfigBtn">Save Config</button>
+        <button class="btn btn-secondary" onclick="exportConfigs()" data-i18n="exportAllBtn">Export All</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="extra-body-card">
+      <div class="card-title" data-i18n="extraBodyTitle">Extra Body (JSON) <span data-i18n="extraBodyDescription" style="font-size:0.75rem;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;">(e.g., temperature, max_tokens, stop_sequences)</span></div>
+      <textarea id="extraBody" data-i18n-placeholder="extraBodyPlaceholder" placeholder='{"temperature": 0.7, "max_tokens": 100}'></textarea>
+    </div>
+
+    <div class="card hidden" id="models-card">
+      <div class="card-title" data-i18n="availableModelsTitle">Available Models <span id="model-count" style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
+      <input type="text" id="model-search" data-i18n-placeholder="modelSearchPlaceholder" placeholder="Search models..." oninput="filterModels()" style="margin-bottom:0.75rem;">
+      <div id="model-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0.4rem;max-height:350px;overflow-y:auto;"></div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div data-i18n="sendingRequest">Sending request...</div>
+    </div>
+
+    <div id="response-section">
+      <div class="status-bar" id="status-bar">
+        <div class="status-dot"></div>
+        <span id="status-text"></span>
+        <div class="status-meta">
+          <span id="duration"></span>
+          <span id="http-status"></span>
+        </div>
+      </div>
+
+      <div class="response-body">
+        <div class="response-tabs">
+          <div class="response-tab active" data-tab="content" onclick="switchTab('content')" data-i18n="contentTab">Content</div>
+          <div class="response-tab" data-tab="raw" onclick="switchTab('raw')" data-i18n="rawJsonTab">Raw JSON</div>
+          <div class="response-tab" data-tab="headers" onclick="switchTab('headers')" data-i18n="headersTab">Headers</div>
+        </div>
+        <pre id="response-content"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
