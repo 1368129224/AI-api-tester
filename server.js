@@ -89,7 +89,11 @@ async function fetchWithFallback(baseUrl, endpoint, options) {
 
 
 function buildHeaders(config, apiKey) {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {
+    'Content-Type': 'application/json',
+    // Add a standard browser User-Agent to prevent WAFs (like NVIDIA's) from blocking the request
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+  };
   if (config.apiKeyHeader && apiKey) {
     headers[config.apiKeyHeader] = `${config.apiKeyPrefix}${apiKey}`;
   }
